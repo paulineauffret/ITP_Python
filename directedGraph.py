@@ -82,7 +82,10 @@ while l :
 	#On lit la ligne suivante du fichier
 	l=fic_graphe.readline()
 
+print nodes
 #On ferme les fichiers
 fic_graphe.close()
 fic_res.close()
+
+
 
