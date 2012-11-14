@@ -67,60 +67,52 @@ while l :
 	#Si le noeud pere est deja present dans le dictionnaire edges 
 	if edges.has_key(liste_fichier[0]) : 
 		#On met a jour sa liste de noeuds fils ie on y ajoute le deuxieme element de liste_fichier
-		edges[liste_fichier[0]]= edges[liste_fichier[0]] +","+liste_fichier[1]
+		edges[liste_fichier[0]].append(liste_fichier[1])
 	#Sinon
 	else :
 		#On cree une nouvelle arete 
-		edges[liste_fichier[0]] = liste_fichier[1]
+		edges[liste_fichier[0]]=list()
+		edges[liste_fichier[0]].append(liste_fichier[1])
 		
 	#On lit la ligne suivante du fichier
 	l=fic_graphe.readline()
-
+print edges
+print nodes[0]
 #------------------------------------------------------------------------------------------------------------------#
 #-------------- Partie 2 : Fonctions de recherche du plus court chemin via l'algorithme de Dijkstra ---------------#
 #------------------------------------------------------------------------------------------------------------------#
+def ExtractMin(Q,dist) :
+	mini=Q[0]
+	for i in Q :
+		if dist[i]<dist[mini] :
+			mini=i
+	return mini
 
-def PoidsMinimum(node,poids)
 
-#Fonction qui recherche le plus court chemin entre deux noeuds selon l'algorithme de Dijkstra
-#Preconditions : node1 est le noeud de depart ; node 2 est le noeud d'arrivee ; nodes est une liste contenant tous les noeuds du graphe considere ; edges est un dictionnaire contenant les aretes du graphe considere sous la forme {noeud pere} => {noeud fils}
-#Postconditions : shortestPath est une liste contenant le plus court chemin de node1 a node2
-def dijkstra(node1,node2,nodes,edges) :
+def dijkstra(nodes,edges,s) :
 
-	#On cree un dictionnaire contenant tous les poids des noeuds
-	poids=dict()
-	#On initialise le poids du noeud de depart a 0 
-	poids[node1]=0
-	#On cree un dictionnaire contenant tous les antecedents des noeuds 
-	antecedents=dict()
-	#On cree un dictionnaire indiquant si le noeud a ete visite ou pas 
-	visites=dict()
-	# On met les poids de tous les noeuds a -1, on met tous les antecedents a 0 et aucun noeud n'est visite 
-	for n in nodes:
-		poids[n]=-1
-		antecedents[n]=0
-		visites[n]="non" 
-	#Le noeud de depart est le noeud avec le plus petit poids, ie node1
-	noeud_depart=node1 
-	#Le noeud de depart est visite	
-	visites[node1]="oui"
+	dist=dict()
+	Q=list()
+	for n in nodes :
+		dist[n]=1000
+	dist[s]=0
+	Q=nodes
+	while Q :
+		u=ExtractMin(Q,dist)
+		print dist[u]
+		Q.remove(u)
+		if edges.has_key(u) :
+			for v in edges[u] :
+				print dist[v]
+				print dist[u]
+				if dist[v]>=dist[u]+1 :
+					dist[v]=dist[u]+1
+	return dist
 
-	#Tant que le noeud de depart ie le noeud ayant le poids le plus faible n'est pas egal au noeud d'arrive 
-	while noeud_depart != node2 :		
-		
-		#On trouve le ou les noeuds avec les poids minimums
-		PlusFaiblePoids=PoidsMinimum(edges[noeud_depart],poids)
-		
-		for mini in PlusFaiblePoids : 
+dist=list()
+dist=dijkstra(nodes,edges,nodes[0])
 
-		for fils in edges[noeud_depart] :
-			#Si le noeud fils n'a pas ete visite et que le poids du noeud de depart + le poids de l'arete (1) est inferieur au poids du noeud fils OU que le poids du noeud fils vaut -1
-			if ((visites[fils]=="non" and poids[noeud_depart] + 1 < poids[fils]) or poids[fils]==-1) : 
-				#Le poids du noeud fils est la somme du poids du noeud de depart + celui de l'arete
-				poids[fils]=poids[noeud_depart]+1
-				#L'antecedent du fils devient le noeud de depart 
-				antecedents[fils]=noeud_depart
+print dist
 	
-
-
-		
+	
+	
