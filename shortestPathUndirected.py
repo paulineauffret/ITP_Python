@@ -43,20 +43,20 @@ os.system("./debruijn3 "+str(fichier_reads)+" -k 3 -o reads -g 0")
 fichier_graphe=str(fichier_reads).replace(".fa",".graph")
 
 
-#-----------------------------------------------------------------------------------------------#
-#-- Etape 2 : Conversion graphe de De Bruijn -> graphe dirige sous forme de liste adjacente ----#
-#-----------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------#
+#---- Etape 2 : Conversion graphe de De Bruijn -> graphe NON dirige sous forme de liste adjacente ----#
+#-----------------------------------------------------------------------------------------------------#
 #On ouvre le fichier fichier_graphe en lecture
 try:                     		
 	fic_graphe = open(fichier_graphe,'r')
 except IOError, e:      		
 	print "Fichier inconnu: ", fichier_graphe
 
-#on cree la variable listAdj qui contiendra le nom du fichier sortie du script directeGraph.py
+#on cree la variable listAdj qui contiendra le nom du fichier sortie du script undirecteGraph.py
 listAdj="listeAdj.txt"
 
-#On execute le script python directedGraph.py qui transforme le graphe de De Bruijn en graphe dirige (liste adjacente)
-os.system("python directedGraph.py "+str(fichier_graphe)+" "+str(listAdj))
+#On execute le script python directedGraph.py qui transforme le graphe de De Bruijn en graphe non dirige (liste adjacente)
+os.system("python undirectedGraph.py "+str(fichier_graphe)+" "+str(listAdj))
 
 #On ouvre le fichier listAdj  en lecture
 try:                     		
@@ -105,7 +105,7 @@ nb_nodes=len(nodes)
 #-----------------------------------------------------------------------------------------------#
 #---------------------------- Etape 4 : Dessin du graphe de depart -----------------------------#
 #-----------------------------------------------------------------------------------------------#
-#Cette partie permet de dessiner le graphe avant la ponderation des noeuds par la centralite
+#Cette partie permet de dessiner le graphe non dirigé avant la ponderation des noeuds par la centralite
 
 #Declaration d'un objet graph de type pydot.Dot
 graph = pydot.Dot(graph_type='graph')
@@ -140,6 +140,9 @@ for key in edges.keys() :
 
 #On dessine le graphe dans le fichier graphe_before.png
 graph.write_png('graphe_before.png')
+
+#On ouvre le graphe
+os.system("gnome-open graphe_before.png")
 
 
 #------------------------------------------------------------------------------------------------------------------#
@@ -225,4 +228,10 @@ for key in edges.keys() :
 			graph.add_edge(edgeF)
 graph.write_png('graphe_after.png')
 
+#On ouvre le graphe
+os.system("gnome-open graphe_after.png")
+
 	
+
+#2012 Auffret Pauline, Marino Anais & Parent Kevin
+#Cours de Gustavo Sacomoto
