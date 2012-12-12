@@ -6,7 +6,9 @@ import pydot
 # -*- coding: utf-8 -*-
 
 #-----------------------------------------------------------------------------------------------#
-#	    Script de recherche du plus court chemin par l'algorithme de Dijkstra		#
+#	Script permettant de produire un graphe non dirige dessine sur lequel les noeuds ont 	#
+#		une couleur proportionnelle a leur centralite dans le graphe, a partir		#
+#			d'un fichier fasta contenant une liste de lectures			#
 #-----------------------------------------------------------------------------------------------#
 #Warning : on considere que le poids de toutes les aretes vaut 1 
 
@@ -14,15 +16,17 @@ import pydot
 # - le script directedGraph.py ;
 # - le programme debruijn3.cpp.
 
-
 #-----------------------------------------------------------------------------------------------#
-#--------------------- Etape 1 : Conversion reads -> graphe de De Bruijn -----------------------#
+#------------------- Etape 0 : Lecture des arguments, ouverture des fichiers -------------------#
 #-----------------------------------------------------------------------------------------------#
 #Le fichier donne en parametre 1 contient une serie de reads au format fasta (extension .fa)
 fichier_reads=sys.argv[1]
 
 #Le fichier donne en parametre 2 est le fichier resultat 
 fichier_resultat=sys.argv[2]
+
+#L'entier donne en parametre 3 est la taille des kmers
+kmer=sys.argv[3]
 
 #On ouvre le fichier fichier_reads en lecture
 try:                     		
@@ -36,8 +40,12 @@ try:
 except IOError, e:      		
 	print "Fichier inconnu: ", fichier_resultat
 
+
+#-----------------------------------------------------------------------------------------------#
+#--------------------- Etape 1 : Conversion reads -> graphe de De Bruijn -----------------------#
+#-----------------------------------------------------------------------------------------------#
 #On execute le programme debruijn3 qui transforme le fichier de reads en graphe de De Bruijn
-os.system("./debruijn3 "+str(fichier_reads)+" -k 3 -o reads -g 0")
+os.system("./debruijn3 "+str(fichier_reads)+" -k "+kmer+" -o "+str(fichier_reads).replace(".fa","")+" -g 0")
 
 #On met dans la variable fichier_graphe le nom du fichier contenant le graphe venant d'etre genere
 fichier_graphe=str(fichier_reads).replace(".fa",".graph")
@@ -56,7 +64,7 @@ except IOError, e:
 listAdj="listeAdj.txt"
 
 #On execute le script python directedGraph.py qui transforme le graphe de De Bruijn en graphe non dirige (liste adjacente)
-os.system("python undirectedGraph.py "+str(fichier_graphe)+" "+str(listAdj))
+os.system("python undirectedGraph.py "+str(fichier_graphe)+" "+str(listAdj)+" "+kmer)
 
 #On ouvre le fichier listAdj  en lecture
 try:                     		
@@ -105,7 +113,7 @@ nb_nodes=len(nodes)
 #-----------------------------------------------------------------------------------------------#
 #---------------------------- Etape 4 : Dessin du graphe de depart -----------------------------#
 #-----------------------------------------------------------------------------------------------#
-#Cette partie permet de dessiner le graphe non dirigé avant la ponderation des noeuds par la centralite
+#Cette partie permet de dessiner le graphe non dirige avant la ponderation des noeuds par la centralite
 
 #Declaration d'un objet graph de type pydot.Dot
 graph = pydot.Dot(graph_type='graph')
@@ -139,10 +147,10 @@ for key in edges.keys() :
 			graph.add_edge(edgeF)
 
 #On dessine le graphe dans le fichier graphe_before.png
-graph.write_png('graphe_before.png')
+graph.write_png('graphe_before_undirected.png')
 
 #On ouvre le graphe
-os.system("gnome-open graphe_before.png")
+os.system("gnome-open graphe_before_undirected.png")
 
 
 #------------------------------------------------------------------------------------------------------------------#
@@ -198,11 +206,21 @@ for i in nodes:
 #Cette partie permet de calculer la centralite associee a chacun des noeuds du graphe, selon la formule :
 #C(i)=(n-1)/[somme(d(i,j))] avec n = nombre total de noeuds du graphe, et d(i,j) = plus courte distance de i a j
 centrality=dict()
+inf = nb_nodes
 for vertex in dico_final :
 	sum_dist=0
+	nb_inf=0
 	for dist in dico_final[vertex] :
-		sum_dist+=float(dist)
-	centrality[vertex]=float((nb_nodes-1)/sum_dist)
+		if dist != sys.maxint :
+			sum_dist+=float(dist)
+		else :
+			nb_inf+=1
+	if sum_dist != 0 :
+		sum_dist+=inf*nb_inf
+		centrality[vertex]=float((nb_nodes-1)/sum_dist)
+	else :
+		centrality[vertex]=0
+print centrality
 
 #-----------------------------------------------------------------------------------------------------------------#
 #------------------------------------ Etape 7 : Dessin du graphe final -------------------------------------------#
@@ -212,7 +230,85 @@ graph = pydot.Dot(graph_type='graph')
 graph_node=dict()
 graph_edges=list()
 for node in nodes :
-	color="#"+"44"+str(int(centrality[node]*10000))
+	#centrality[node]=centrality[node]*10
+	if centrality[node]==0 :
+		color = "#FFFFFF"
+	elif 0<centrality[node] and centrality[node]<=0.01 :
+		color= "#FAFBFC"
+	elif 0.01<centrality[node] and centrality[node]<=0.02 :
+		color= "#F5F7F9"
+	elif 0.02<centrality[node] and centrality[node]<=0.03 :
+		color= "#F0F3F6"
+	elif 0.03<centrality[node] and centrality[node]<=0.04 :
+		color= "#EBEFF3"
+	elif 0.04<centrality[node] and centrality[node]<=0.05 :
+		color= "#E6EBF0"
+	elif 0.05<centrality[node] and centrality[node]<=0.06 :
+		color= "#E1E7ED"
+	elif 0.06<centrality[node] and centrality[node]<=0.07 :
+		color= "#DCE3EA"
+	elif 0.07<centrality[node] and centrality[node]<=0.08 :
+		color= "#D7DFE7"
+	elif 0.08<centrality[node] and centrality[node]<=0.09 :
+		color= "#D2DBE4"
+	elif 0.09<centrality[node] and centrality[node]<=0.1 :
+		color= "#CCD7E1"
+	elif 0.1<centrality[node] and centrality[node]<=0.11 :
+		color= "#C7D3DE"
+	elif 0.11<centrality[node] and centrality[node]<=0.12 :
+		color= "#C2CFDB"
+	elif 0.12<centrality[node] and centrality[node]<=0.13 :
+		color= "#BDCAD8"
+	elif 0.13<centrality[node] and centrality[node]<=0.14 :
+		color= "#B8C6D5"
+	elif 0.14<centrality[node] and centrality[node]<=0.15 :
+		color= "#B3C2D2"
+	elif 0.15<centrality[node] and centrality[node]<=0.16 :
+		color= "#AEBECF"
+	elif 0.16<centrality[node] and centrality[node]<=0.17 :
+		color= "#A9BACB"
+	elif 0.17<centrality[node] and centrality[node]<=0.18 :
+		color= "#A4B6C8"
+	elif 0.18<centrality[node] and centrality[node]<=0.19 :
+		color= "#9FB2C5"
+	elif 0.19<centrality[node] and centrality[node]<=0.2 :
+		color= "#A9BACB"
+	elif 0.2<centrality[node] and centrality[node]<=0.21 :
+		color= "#99AEC2"
+	elif 0.21<centrality[node] and centrality[node]<=0.22 :
+		color= "#94AABF"
+	elif 0.22<centrality[node] and centrality[node]<=0.23 :
+		color= "#8FA6BC"
+	elif 0.23<centrality[node] and centrality[node]<=0.24 :
+		color= "#8AA2B9"
+	elif 0.24<centrality[node] and centrality[node]<=0.25 :
+		color= "#859EB6"
+	elif 0.25<centrality[node] and centrality[node]<=0.26 :
+		color= "#8099B3"
+	elif 0.26<centrality[node] and centrality[node]<=0.27 :
+		color= "#7B95B0"
+	elif 0.27<centrality[node] and centrality[node]<=0.28 :
+		color= "#7691AD"
+	elif 0.28<centrality[node] and centrality[node]<=0.29 :
+		color= "#718DAA"
+	elif 0.29<centrality[node] and centrality[node]<=0.3 :
+		color= "#6C89A7"
+	elif 0.3<centrality[node] and centrality[node]<=0.35 :
+		color= "#6685A4"
+	elif 0.35<centrality[node] and centrality[node]<=0.4 :
+		color= "#6181A1"
+	elif 0.4<centrality[node] and centrality[node]<=0.45 :
+		color= "#5C7D9E"
+	elif 0.45<centrality[node] and centrality[node]<=0.5 :
+		color= "#57799B"
+	elif 0.5<centrality[node] and centrality[node]<=0.6 :
+		color= "#527597"
+	elif 0.6<centrality[node] and centrality[node]<=0.7 :
+		color= "#4D7194"
+	elif 0.7<centrality[node] and centrality[node]<=0.9 :
+		color= "#486D91"
+	else :
+		color="#013366"
 	V = pydot.Node(str(node), style="filled",fillcolor=color)
 	graph_node[node]=V
 	graph.add_node(V)
@@ -226,10 +322,10 @@ for key in edges.keys() :
 			graph_edges.append(edgeF)			
 			edgeF=pydot.Edge(node1, node2)
 			graph.add_edge(edgeF)
-graph.write_png('graphe_after.png')
+graph.write_png('graphe_after_undirected.png')
 
 #On ouvre le graphe
-os.system("gnome-open graphe_after.png")
+os.system("gnome-open graphe_after_undirected.png")
 
 	
 

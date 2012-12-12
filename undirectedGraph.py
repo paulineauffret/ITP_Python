@@ -4,7 +4,7 @@ import re
 # -*- coding: utf-8 -*-
 
 #-----------------------------------------------------------------------------------------------#
-# Scrit de tranformation d'un graphe de De Bruijn en graphe dirige #
+# 		Scrit de tranformation d'un graphe de De Bruijn en graphe non dirige		#
 #-----------------------------------------------------------------------------------------------#
 
 #Le fichier donne en parametre 1 contient la structure d'un graphe de De Bruijn
@@ -12,6 +12,9 @@ fichier_graphe=sys.argv[1]
 
 #Le fichier donne en parametre 2 est le fichier resultat sous forme de liste adjacente
 fichier_resultat=sys.argv[2]
+
+#Le fichier donne en parametre 3 est la taille des kmers
+kmer=sys.argv[3]
 
 #On ouvre le fichier fichier_graphe en lecture
 try:
@@ -43,7 +46,7 @@ while l :
 			#On recupere le numero du noeud
 			result1=re.search("[0-9]+",l)
 			#On recupere la sequence des noeuds
-			result2=re.search("[A-Z]{3} / [A-Z]{3}",l)
+			result2=re.search("[A-Z]{"+kmer+"} / [A-Z]{"+kmer+"}",l)
 			#Si le noeud est bien trouve, on le stocke dans le dictionnaire nodes sous la forme {numero}=>{sequenceF,sequenceR}
 			if result1 is not None and result2 is not None :
 				nodes[int(result1.group(0))]=result2.group(0).replace(' / ','/')
@@ -78,3 +81,6 @@ while l :
 #On ferme les fichiers
 fic_graphe.close()
 fic_res.close()
+
+#2012 Auffret Pauline, Marino Anais & Parent Kevin
+#Cours de Gustavo Sacomoto
